@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit User Cities</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand">Admin Dashboard</span>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('admin_users') }}">Back to Users</a>
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Edit Cities for {{ user.username }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Allowed Cities</label>
+                                <div class="dropdown-custom">
+                                    <div class="dropdown-toggle-custom" id="cityDropdown">
+                                        <span id="selectedText">Select Cities</span>
+                                        <span class="arrow">▼</span>
+                                    </div>
+                                    <div class="dropdown-menu-custom" id="cityMenu">
+                                        <div class="dropdown-item-custom">
+                                            <input type="checkbox" id="all" value="ALL" name="cities" {{ 'checked' if user_cities|length == 5 else '' }}>
+                                            <label for="all">All Cities</label>
+                                        </div>
+                                        <div class="dropdown-item-custom">
+                                            <input type="checkbox" id="jakarta" value="Jakarta" name="cities" {{ 'checked' if 'Jakarta' in user_cities else '' }}>
+                                            <label for="jakarta">Jakarta</label>
+                                        </div>
+                                        <div class="dropdown-item-custom">
+                                            <input type="checkbox" id="bandung" value="Bandung" name="cities" {{ 'checked' if 'Bandung' in user_cities else '' }}>
+                                            <label for="bandung">Bandung</label>
+                                        </div>
+                                        <div class="dropdown-item-custom">
+                                            <input type="checkbox" id="surabaya" value="Surabaya" name="cities" {{ 'checked' if 'Surabaya' in user_cities else '' }}>
+                                            <label for="surabaya">Surabaya</label>
+                                        </div>
+                                        <div class="dropdown-item-custom">
+                                            <input type="checkbox" id="medan" value="Medan" name="cities" {{ 'checked' if 'Medan' in user_cities else '' }}>
+                                            <label for="medan">Medan</label>
+                                        </div>
+                                        <div class="dropdown-item-custom">
+                                            <input type="checkbox" id="yogyakarta" value="Yogyakarta" name="cities" {{ 'checked' if 'Yogyakarta' in user_cities else '' }}>
+                                            <label for="yogyakarta">Yogyakarta</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Cities</button>
+                            <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .dropdown-custom {
+            position: relative;
+            width: 100%;
+        }
+        .dropdown-toggle-custom {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dropdown-menu-custom {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .dropdown-item-custom {
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+        .dropdown-item-custom:hover {
+            background-color: #f8f9fa;
+        }
+        .dropdown-item-custom input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        .dropdown-item-custom label {
+            margin: 0;
+            cursor: pointer;
+        }
+        .arrow {
+            transition: transform 0.2s;
+        }
+        .arrow.open {
+            transform: rotate(180deg);
+        }
+    </style>
+    
+    <script>
+        const dropdown = document.getElementById('cityDropdown');
+        const menu = document.getElementById('cityMenu');
+        const arrow = dropdown.querySelector('.arrow');
+        const selectedText = document.getElementById('selectedText');
+        const checkboxes = menu.querySelectorAll('input[type="checkbox"]');
+        const allCheckbox = document.getElementById('all');
+        
+        // Initialize selected text
+        updateSelectedText();
+        
+        // Toggle dropdown
+        dropdown.addEventListener('click', function() {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            arrow.classList.toggle('open');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdown.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+                arrow.classList.remove('open');
+            }
+        });
+        
+        // Handle checkbox changes
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'ALL') {
+                    if (this.checked) {
+                        checkboxes.forEach(cb => {
+                            if (cb.value !== 'ALL') cb.checked = false;
+                        });
+                    }
+                } else {
+                    if (this.checked) {
+                        allCheckbox.checked = false;
+                    }
+                }
+                updateSelectedText();
+            });
+        });
+        
+        function updateSelectedText() {
+            const selected = Array.from(checkboxes).filter(cb => cb.checked);
+            if (selected.length === 0) {
+                selectedText.textContent = 'Select Cities';
+            } else if (allCheckbox.checked) {
+                selectedText.textContent = 'All Cities';
+            } else {
+                const names = selected.map(cb => cb.nextElementSibling.textContent);
+                selectedText.textContent = names.join(', ');
+            }
+        }
+    </script>
+</body>
+</html>
