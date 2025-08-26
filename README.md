@@ -38,6 +38,7 @@ python run.py
 
 ## Bonus (runapp.bat)
 
+```bat
 @echo off
 cd /d D:\path\ke\folder_project
 call venv\Scripts\activate
